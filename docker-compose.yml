@@ -1,0 +1,43 @@
+#-------------------------------------------------------------------------------
+# Docker Environment Composition for a PIDSvc development environment.
+#-------------------------------------------------------------------------------
+version: "3.8"
+
+volumes:
+    dbdata:
+
+services:
+
+    # Run this service in the foreground to build the PIDSvc .war file for the
+    # JDK used by the docker image.
+    pidsvc-build:
+        container_name: pidsvc-build
+        image: maven:3-openjdk-11
+        volumes:
+            - ~/.m2/:/root/.m2
+            - ./:/app/
+        command: "mvn clean install -f /app/pom.xml -Dversion='${VERSION:-1.2-SNAPSHOT}' -DbuildNumber='${BUILD_NUMBER:-dev}' -Dpostgres.jdbc.scope='compile'"
+
+    # Containerised PostgreSQL database for the pidsvc-tomcat container.
+    pidsvc-db:
+        container_name: pidsvc-db
+        image: postgres:11-alpine
+        environment:
+            POSTGRES_PASSWORD: postgres123
+        volumes:
+            - ./docker-init/init-pidsvc-db.sh:/docker-entrypoint-initdb.d/init-pidsvc-db.sh
+            - ./src/main/db/:/docker-entrypoint-initdb.d/pidsvc/
+            - dbdata:/var/lib/postgresql/data
+
+    # Run this service in the foreground to launch the PIDSvc
+    # application in a tomcat servlet container.
+    pidsvc-tomcat:
+        container_name: pidsvc-tomcat
+        depends_on:
+            - pidsvc-db
+        image: tomcat:9.0.45-jdk11-openjdk-buster
+        ports:
+            - 8888:8080
+        volumes:
+            - ./docker-init/context.xml:/usr/local/tomcat/conf/Catalina/localhost/pidsvc.xml
+            - ./target/pidsvc-${VERSION:-1.2-SNAPSHOT}.${BUILD_NUMBER:-dev}/:/usr/local/tomcat/webapps/pidsvc/
