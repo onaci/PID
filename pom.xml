@@ -3,7 +3,7 @@
 	<groupId>csiro.pidsvc</groupId>
 	<artifactId>pidsvc</artifactId>
 	<packaging>war</packaging>
-	<version>1.2-SNAPSHOT</version>
+	<version>${revision}</version>
 	<name>Persistent Identifiers PID Service (PID Service)</name>
 	<url>https://confluence.csiro.au/x/9ZMKGg</url>
 	<licenses>
@@ -30,6 +30,7 @@
 		<jdk.release.version>11</jdk.release.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<postgres.jdbc.scope>provided</postgres.jdbc.scope>
+		<revision>1.2-SNAPSHOT</revision>
 		<version.check.repository>https://cgsrv1.arrc.csiro.au/swrepo/PidService/jenkins/master/</version.check.repository>
 	</properties>
 	<build>
