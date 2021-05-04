@@ -16,7 +16,7 @@ services:
         volumes:
             - ~/.m2/:/root/.m2
             - ./:/app/
-        command: "mvn clean install -f /app/pom.xml -Dversion='${VERSION:-1.2-SNAPSHOT}' -DbuildNumber='${BUILD_NUMBER:-dev}' -Dpostgres.jdbc.scope='compile' -Dversion.check.repository=''"
+        command: "mvn clean install -f /app/pom.xml -DbuildNumber='${BUILD_NUMBER:-dev}' -Dpostgres.jdbc.scope='compile' -Dversion.check.repository=''"
 
     # Containerised PostgreSQL database for the pidsvc-tomcat container.
     pidsvc-db:
