@@ -28,7 +28,7 @@
 	</issueManagement>
 	<properties>
 		<jdk.release.version>11</jdk.release.version>
-		<log4j.version>2.14.1</log4j.version>
+		<log4j.version>2.15.0</log4j.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<postgres.jdbc.scope>provided</postgres.jdbc.scope>
 		<revision>1.2-SNAPSHOT</revision>
