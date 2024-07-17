@@ -1,43 +1,38 @@
 #-------------------------------------------------------------------------------
 # Docker Environment Composition for a PIDSvc development environment.
 #-------------------------------------------------------------------------------
-version: "3.8"
+x-postgresql-variables: &postgresql-variables
+  POSTGRES_DB: 'ereefs_pidsvc'
+  POSTGRES_PASSWORD: 'pidsvc123'
+  POSTGRES_USER: 'pidsvc-admin'
 
 volumes:
     dbdata:
 
 services:
-
-    # Run this service in the foreground to build the PIDSvc .war file for the
-    # JDK used by the docker image.
-    pidsvc-build:
-        container_name: pidsvc-build
-        image: maven:3-openjdk-11
-        volumes:
-            - ~/.m2/:/root/.m2
-            - ./:/app/
-        command: "mvn clean install -f /app/pom.xml -DbuildNumber='${BUILD_NUMBER:-dev}' -Dpostgres.jdbc.scope='compile' -Dversion.check.repository=''"
-
-    # Containerised PostgreSQL database for the pidsvc-tomcat container.
+    # PostgreSQL database for the PIDSvc Database
     pidsvc-db:
         container_name: pidsvc-db
-        image: postgres:11-alpine
+        image: postgres:14-alpine
         environment:
-            POSTGRES_PASSWORD: postgres123
+            <<: [ *postgresql-variables ]
         volumes:
-            - ./docker-init/init-pidsvc-db.sh:/docker-entrypoint-initdb.d/init-pidsvc-db.sh
-            - ./src/main/db/:/docker-entrypoint-initdb.d/pidsvc/
             - dbdata:/var/lib/postgresql/data
+            - ./src/main/db/postgresql.sql:/docker-entrypoint-initdb.d/postgresql.sql
+
 
     # Run this service in the foreground to launch the PIDSvc
     # application in a tomcat servlet container.
     pidsvc-tomcat:
+        build:
+            context: .
+            #target: builder
         container_name: pidsvc-tomcat
         depends_on:
             - pidsvc-db
-        image: tomcat:9.0.45-jdk11-openjdk-buster
+        environment:
+            <<: [ *postgresql-variables ]
+            POSTGRES_HOST: 'pidsvc-db'
+        image: onaci/pidsvc:dev
         ports:
-            - 8888:8080
-        volumes:
-            - ./docker-init/context.xml:/usr/local/tomcat/conf/Catalina/localhost/pidsvc.xml
-            - ./target/pidsvc-${VERSION:-1.2-SNAPSHOT}.${BUILD_NUMBER:-dev}/:/usr/local/tomcat/webapps/pidsvc/
+            - 8080:8080
