@@ -19,6 +19,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     && mvn dependency:go-offline \
         -DbuildNumber='${BUILD_NUMBER}' \
         -Drevision="${BUILD_REVISION}" \
+        -Djdk.release.version="${JAVA_VERSION}" \
         -Dpostgres.jdbc.scope='compile' \
         -Dversion.check.repository=''
 
@@ -28,6 +29,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn clean package verify \
         -DbuildNumber='${BUILD_NUMBER}' \
         -Drevision="${BUILD_REVISION}" \
+        -Djdk.release.version="${JAVA_VERSION}" \
         -Dpostgres.jdbc.scope='compile' \
         -Dversion.check.repository=''
 
