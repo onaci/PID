@@ -1,24 +1,24 @@
-ARG BUILD_VERSION="1.2"
+ARG BUILD_REVISION="1.2"
 ARG BUILD_NUMBER="dev"
-ARG JAVA_RUNTIME_VERSION="11"
+ARG JAVA_VERSION="11"
 ARG TOMCAT_VERSION="9.0"
 
 #------------------------------------------------------------------------------
 
-FROM maven:3-openjdk-${JAVA_RUNTIME_VERSION} as builder
-ARG BUILD_VERSION
+FROM maven:3-openjdk-${JAVA_VERSION} as builder
+ARG BUILD_REVISION
 ARG BUILD_NUMBER
-ARG JAVA_RUNTIME_VERSION
+ARG JAVA_VERSION
 
 WORKDIR /app
 
 # Download and cache all Maven Dependencies
 COPY pom.xml ./
 RUN --mount=type=cache,target=/root/.m2 \
-    echo "java.runtime.version=${JAVA_RUNTIME_VERSION}" >> system.properties \
+    echo "java.runtime.version=${JAVA_VERSION}" >> system.properties \
     && mvn dependency:go-offline \
         -DbuildNumber='${BUILD_NUMBER}' \
-        -Drevision="${BUILD_VERSION}" \
+        -Drevision="${BUILD_REVISION}" \
         -Dpostgres.jdbc.scope='compile' \
         -Dversion.check.repository=''
 
@@ -27,15 +27,18 @@ COPY ./src/ ./src/
 RUN --mount=type=cache,target=/root/.m2 \
     mvn clean package verify \
         -DbuildNumber='${BUILD_NUMBER}' \
-        -Drevision="${BUILD_VERSION}" \
+        -Drevision="${BUILD_REVISION}" \
         -Dpostgres.jdbc.scope='compile' \
         -Dversion.check.repository=''
 
 #------------------------------------------------------------------------------
 
-FROM onaci/tomcat-base:${TOMCAT_VERSION}-jdk${JAVA_RUNTIME_VERSION} as server
-ARG BUILD_VERSION
+FROM onaci/tomcat-base:${TOMCAT_VERSION}-jdk${JAVA_VERSION} as server
+ARG BUILD_REVISION
 ARG BUILD_NUMBER
+ARG JAVA_VERSION
+ARG TOMCAT_VERSION
+LABEL org.opencontainers.image.base.name="onaci/tomcat-base:${TOMCAT_VERSION}-jdk${JAVA_VERSION}"
 
 # Upgrade the base image
 ENV DEBIAN_FRONTEND noninteractive
@@ -48,7 +51,7 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     && rm -rf /var/lib/apt/lists/*
 
 # Install the compiled PID Java application
-COPY --from=builder "/app/target/pidsvc-${BUILD_VERSION}.${BUILD_NUMBER}.war" "${CATALINA_HOME}/webapps/pidsvc.war"
+COPY --from=builder "/app/target/pidsvc-${BUILD_REVISION}.${BUILD_NUMBER}.war" "${CATALINA_HOME}/webapps/pidsvc.war"
 
 # Install the tomcat context definition that sets up the database connection
 COPY ./docker-init/tomcat/context.xml "${CATALINA_HOME}/conf/Catalina/localhost/pidsvc.xml"

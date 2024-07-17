@@ -107,14 +107,14 @@ The container build stages understand the following build-time arguments:
 
 | ARG | Description | Default Value |
 |-----|-------------|---------------|
-| `BUILD_VERSION` | The base-version of the PID Service Java Servlet application <sup>1</sup> | `1.2` |
+| `BUILD_REVISION` | The base-version of the PID Service Java Servlet application <sup>1</sup> | `1.2` |
 | `BUILD_NUMBER` | The container-build version that is being compiled. <sup>1</sup> | `dev` |
-| `JAVA_RUNTIME_VERSION` | The Java Runtime version you want to compile the Java Servlet application for <sup>2</sup> | `11` |
+| `JAVA_VERSION` | The Java Runtime version you want to compile the Java Servlet application for <sup>2</sup> | `11` |
 | `TOMCAT_VERSION` | The version of the [Apache Tomcat](https://tomcat.apache.org/) `server` you want to deploy at runtime <sup>2</sup>| `9.0` |
 
-**<sup>1</sup>** The packaged .war file name will be `pidsvc-${BUILD_VERSION}.${BUILD_NUMBER}.war`
+**<sup>1</sup>** The packaged .war file name will be `pidsvc-${BUILD_REVISION}.${BUILD_NUMBER}.war`
 
-**<sup>2</sup>** The pattern `${TOMCAT_VERSION}-jdk${JAVA_RUNTIME_VERSION}` *must* match a valid tag of the [onaci/tomcat-base](https://hub.docker.com/r/onaci/tomcat-base) image.
+**<sup>2</sup>** The pattern `${TOMCAT_VERSION}-jdk${JAVA_VERSION}` *must* match a valid tag of the [onaci/tomcat-base](https://hub.docker.com/r/onaci/tomcat-base) image.
 
 &nbsp;
 
