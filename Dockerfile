@@ -51,9 +51,9 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
 COPY --from=builder "/app/target/pidsvc-${BUILD_VERSION}.${BUILD_NUMBER}.war" "${CATALINA_HOME}/webapps/pidsvc.war"
 
 # Install the tomcat context definition that sets up the database connection
-COPY ./docker-init/context.xml "${CATALINA_HOME}/conf/Catalina/localhost/pidsvc.xml"
+COPY ./docker-init/tomcat/context.xml "${CATALINA_HOME}/conf/Catalina/localhost/pidsvc.xml"
 
 # Allow the runtime Postgresql database connectionstring to be configured via
 # docker configs or docker secrets (or plain old )
-COPY ./docker-init/configure-pidsvc-db.sh "${CATALINA_HOME}/conf/"
+COPY ./docker-init/tomcat/configure-pidsvc-db.sh "${CATALINA_HOME}/conf/"
 RUN echo ". '${CATALINA_HOME}/conf/configure-pidsvc-db.sh'" >> "${CATALINA_HOME}/bin/setenv.sh"

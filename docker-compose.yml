@@ -1,10 +1,10 @@
 #-------------------------------------------------------------------------------
 # Docker Environment Composition for a PIDSvc development environment.
 #-------------------------------------------------------------------------------
-x-postgresql-variables: &postgresql-variables
-  POSTGRES_DB: 'ereefs_pidsvc'
-  POSTGRES_PASSWORD: 'pidsvc123'
-  POSTGRES_USER: 'pidsvc-admin'
+x-postgres-common: &postgres-common
+  POSTGRES_DB: "${POSTGRES_DB:-pidsvc}"
+  POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-pidsvc123}"
+  POSTGRES_USER: "${POSTGRES_USER:-pidsvc-admin}"
 
 volumes:
     dbdata:
@@ -15,10 +15,12 @@ services:
         container_name: pidsvc-db
         image: postgres:14-alpine
         environment:
-            <<: [ *postgresql-variables ]
+            <<: [ *postgres-common ]
+            POSTGRES_DUMP_FILE: "${POSTGRES_DUMP_FILE:-}"
+            POSTGRES_DUMP_FORMAT: "${POSTGRES_DUMP_FORMAT:-tar}"
         volumes:
             - dbdata:/var/lib/postgresql/data
-            - ./src/main/db/postgresql.sql:/docker-entrypoint-initdb.d/postgresql.sql
+            - ./docker-init/postgresql/:/docker-entrypoint-initdb.d/
 
 
     # Run this service in the foreground to launch the PIDSvc
@@ -31,7 +33,7 @@ services:
         depends_on:
             - pidsvc-db
         environment:
-            <<: [ *postgresql-variables ]
+            <<: [ *postgres-common ]
             POSTGRES_HOST: 'pidsvc-db'
         image: onaci/pidsvc:dev
         ports:
